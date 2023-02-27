@@ -2,7 +2,7 @@ from copy import deepcopy, copy
 from getkey import getkey, keys
 from os import system
 
-class Textbox():
+class textbox():
     enable_live_edit = True
 
     def __init__(self) -> None:
@@ -402,12 +402,4 @@ A   S   D                       of the textbox
     def get_str(self) -> str:
         self.str_rep = self.__repr__().replace("\033","\\033").replace("\n","\\n")
         return self.str_rep
-        
 
-abox = Textbox()
-abox.create_box(text="\033[32mHealth:\033[33m1000/32767",width=20,height=1,priority=0,position=(0,0))
-abox.create_box(text="\033[31mDefense:1000/32767",width=10,height=1,position=(20,1),priority=0)
-abox.create_box(text="\033[32mEnergy:\033[34m1000/32767",width=15,height=1,priority=0,position=(0,2))
-print(abox)
-#print(abox.get_str())
-abox.live_edit()
