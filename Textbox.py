@@ -6,9 +6,6 @@ class textbox():
     enable_live = False
 
     def __init__(self,height=10,width=30,border="wave") -> None:
-        # do not use \n in the text, because it will mess up the style. 
-        # Update Colour.
-
         self.border = border
         self.width = width
         self.height = height
