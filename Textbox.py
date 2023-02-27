@@ -3,15 +3,15 @@ from getkey import getkey, keys
 from os import system
 
 class textbox():
-    enable_live_edit = True
+    enable_live = False
 
-    def __init__(self) -> None:
+    def __init__(self,height=10,width=30,border="wave") -> None:
         # do not use \n in the text, because it will mess up the style. 
         # Update Colour.
 
-        self.border = "wave"
-        self.width = 30
-        self.height = 10
+        self.border = border
+        self.width = width
+        self.height = height
         self.boxes = []
         self.str_rep = ""
     
@@ -30,9 +30,9 @@ class textbox():
                             "change line":False}
         })
     
-    @staticmethod
-    def enable_live() -> None:
-        Textbox.enable_live_edit = True
+    @classmethod
+    def enable_liveedit(self) -> None:
+        textbox.enable_live = True
 
     def live_edit(self) -> None:
         def clear() -> None:
@@ -237,11 +237,13 @@ A   S   D                       of the textbox
                 elif keyboard == "x":
                     return
 
-        if not Textbox.enable_live_edit:
+        if not textbox.enable_live:
             print("Live edit is disabled!")
             return
         editing = True
         while editing:
+            if self.boxes == []:
+                self.create_box(text="(T) Edit",width=10,height=1,priority=0)
             clear()
             print(self.__repr__())
             main_menu()
@@ -253,9 +255,9 @@ A   S   D                       of the textbox
                 eb()
             elif keyboard == "x":
                 clear()
-                print("box = Textbox()")
+                print(f"box = textbox(height={self.height},width={self.width},border=\"{self.border}\")")
                 for box in self.boxes:
-                    txt = box['text'].replace('\033','\\033')
+                    txt = box['text'].replace('\033','\\033').replace("\n","\\n")
                     print(f"box.create_box(position={box['position']}),width={box['width']},height={box['height']},priority={box['priority']},overflow=\"{box['overflow']}\",override={box['override']},text=\"{txt}\")")
                 return
 
@@ -281,14 +283,13 @@ A   S   D                       of the textbox
         
         complete_str = ""
 
-        # top border
+        # Top border
         top_b_str = ""
         for i in range(self.width):
             top_b_str += f"{border_horizontal_char}"
         complete_str += top_b_str + "\n"
 
-        # box
-        #select box
+        # Body
         try:
             printing_box = self.boxes[0]
         except IndexError:
@@ -297,7 +298,7 @@ A   S   D                       of the textbox
             line = f"{border_verticle_char}"
             line_change = True
             new_colour = ""
-            change = False
+            change = False # This enables colour
             for box in self.boxes: # This is used for \n
                 box["variables"]["change line"] = False
 
@@ -305,11 +306,10 @@ A   S   D                       of the textbox
                 replace = []
                 for box in self.boxes:
                     if box["position"][0] <= i < box["position"][0] + box["width"]:
-                        if box["position"][1] <= j < box["position"][1] + box["height"]: # these two ifs tests if the box is within the bondary
+                        if box["position"][1] <= j < box["position"][1] + box["height"]:
 
-                            if box["priority"] < printing_box["priority"]: # if the box has higher priority than the already selected box
+                            if box["priority"] < printing_box["priority"]: # This enables the priority system
                                 printing_box = box
-                                # if the printing box is changed, then the colour should be resetted...
                                 change = True
                                 new_colour = printing_box["colour"]
                             else:
@@ -317,7 +317,7 @@ A   S   D                       of the textbox
                                     printing_box = box
                                     change = True
                                     new_colour = printing_box["colour"]
-                                elif not (printing_box["position"][1] <= j < printing_box["position"][1] + printing_box["height"]): # if the selcted printing box is not within the box, then assign it to a new box
+                                elif not (printing_box["position"][1] <= j < printing_box["position"][1] + printing_box["height"]):
                                     printing_box = box
                                     change = True
                                     new_colour = printing_box["colour"]
@@ -331,7 +331,7 @@ A   S   D                       of the textbox
                 for box in replace:
                     box["text"] = box["text"][1:]
 
-                #sort colour
+                # Sort colour
                 if change:
                     line += "\033[0m"
                     line += new_colour
@@ -340,16 +340,15 @@ A   S   D                       of the textbox
                     line += printing_box["colour"]
                     line_change = False
 
-                # printing box
+                # This section adds text to the line
                 if printing_box["variables"]["change line"]: # used for \n to change the line
                     line += " "
                     continue
 
                 if printing_box["position"][0] <= i < printing_box["position"][0] + printing_box["width"]:
-                    if printing_box["position"][1] <= j < printing_box["position"][1] + printing_box["height"]: # twisted
+                    if printing_box["position"][1] <= j < printing_box["position"][1] + printing_box["height"]:
                         if printing_box["text"] != "":
-                            # adding text
-                            if printing_box["text"][0] == "\033": # colour code
+                            if printing_box["text"][0] == "\033":
                                 color_txt = ""
                                 for c in range(6):
                                     color_txt += printing_box["text"][0]
@@ -374,9 +373,8 @@ A   S   D                       of the textbox
                         line += " "
                 else:
                     line += " "
-                    #line += "\033[0m"
                 
-                #
+                # This enables overflow system
                 overflow_length = printing_box["variables"]["overflow length"]
                 if i+overflow_length == printing_box["width"] + printing_box["position"][0]:
                     if j+1 == printing_box["position"][1] + printing_box["height"]:
@@ -384,13 +382,12 @@ A   S   D                       of the textbox
                             line = line[:-overflow_length]
                             line += printing_box["overflow"]
                             printing_box["text"] = ""
-                            #line += "\033[0m"
 
             line += "\033[0m"
             line += f"{border_verticle_char}"
             complete_str += line + "\n"
         
-        # bottom border
+        # Bottom border
         top_b_str = ""
         for i in range(self.width):
             top_b_str += f"{border_horizontal_char}"
@@ -402,4 +399,3 @@ A   S   D                       of the textbox
     def get_str(self) -> str:
         self.str_rep = self.__repr__().replace("\033","\\033").replace("\n","\\n")
         return self.str_rep
-
